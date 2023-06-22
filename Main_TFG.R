@@ -54,7 +54,7 @@ LogRetorns_EURJPY=hpos$mids
 densitat=hpos$density
 plot(LogRetorns_EURJPY,densitat,log="xy")
 
-
+library(evir)
 hill(log_pos, end=65000)
 hill(log_pos, end=15000)
 #grafiquem els estimadors de Hill
@@ -71,28 +71,46 @@ alpha_1=length(log_pos_retail_1)*1/sum(log(log_pos_retail_1/thr_1))
 
 h1_1=hist(log(log_pos_retail_1))
 h2_1=hist(log_pos_retail_1,breaks=exp(h1_1$breaks))
-
+h2_1$breaks
 #construim el model
 constant_hist_1= length(log_pos_retail_1)/length(log_pos)
-model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(h2_1$mids/thr_1)^(-(alpha_1)-1)
+model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(sort(log_pos_retail_1)/thr_1)^(-(alpha_1)-1)
 
 
 #mesures de bondat de l'elecció del threshold
 cvplot(log_pos, thr=thr_1)
-ks.test(h2_1$density,model_pw_1/constant_hist_1)
 
 #info de Fisher
 error_1=alpha_1/sqrt(length(log_pos_retail_1))
 
 #plot de l'ajust
 plot(hpos$mids,hpos$density,log="xy")
-lines(h2_1$mids,model_pw_1 , col='red')
+lines(sort(log_pos_retail_1),model_pw_1 , col='red')
 
 
 #dades rellevants de l'ajust
 alpha_1
 error_1
 thr_1
+
+#Test de bondat d'ajust (Kolmogorov-Smirnov)
+set.seed(77777)
+u=runif(7500,0,1)
+
+
+#simulació manual de valors amb distribució powerlaw amb paràmetres de l'ajust
+simulacio=(1 - u)^(-1 /alpha_1)*thr_1
+
+#check visual de la diferència entre funcions de distribució acumulada
+plot(ecdf(log_pos_retail_1))
+lines(ecdf(simulacio), col='red')
+
+#per a no tenir imprecisions en el càlcul del p-valor eliminem els 
+#elements repetits
+log_test=unique(log_pos_retail_1)
+ks.test(log_test, simulacio)
+
+
 
 ##############
 #fem el mateix procediment per a la part negativa.
@@ -101,12 +119,11 @@ a=hist(log(log_neg),breaks=50)
 hneg=hist((log_neg),breaks=exp(a$breaks))
 plot(hneg$mids,hneg$density,log="xy")
 
-length(log_neg[log_neg>1])
 hill(log_neg)
 hill(log_neg, end=50000)
 
 #escollim threshold
-thr_1=0.000154
+thr_1=0.0002
 log_neg_retail_1=log_neg[log_neg>=thr_1]
 length(log_neg_retail_1)
 
@@ -117,23 +134,38 @@ h1_1=hist(log(log_neg_retail_1))
 h2_1=hist(log_neg_retail_1,breaks=exp(h1_1$breaks))
 
 constant_hist_1= length(log_neg_retail_1)/length(log_neg)
-model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(h2_1$mids/thr_1)^(-(alpha_1)-1)
+model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(sort(log_neg_retail_1)/thr_1)^(-(alpha_1)-1)
 
 #mesures de bondad d'elecció del threshold
 cvplot(log_neg, thr=thr_1)
-ks.test(h2_1$density, model_pw_1/constant_hist_1)
 
 #info de Fisher
 error_1=alpha_1/sqrt(length(log_neg_retail_1))
 
 #plot del model
 plot(hneg$mids,hneg$density,log="xy")
-lines(h2_1$mids,model_pw_1 , col='red')
+lines(sort(log_neg_retail_1),model_pw_1 , col='red')
 
 #dades rellevants de l'ajust
 alpha_1
 error_1
 thr_1
+
+#simulació manual de valors amb distribució powerlaw amb paràmetres de l'ajust
+set.seed(77777)
+u=runif(7500,0,1)
+simulacio=(1 - u)^(-1 /alpha_1)*thr_1
+
+#check visual de la diferència entre funcions de distribució acumulada
+plot(ecdf(log_neg_retail_1))
+lines(ecdf(simulacio), col='red')
+
+#per a no tenir imprecisions en el càlcul del p-valor eliminem els 
+#elements repetits
+log_test=unique(log_neg_retail_1)
+ks.test(log_test, mostra)
+
+
 
 ######### FEM EL MATEIX PER L'INTERVAL DE TEMPS ENTRE OBSERVACIONS 1min
 
@@ -166,7 +198,7 @@ hill(log_pos, end=5000)
 #escollim threshold
 thr_1=0.0004
 log_pos_retail_1=log_pos[log_pos>=thr_1]
-
+length(log_pos_retail_1)
 #construim el model
 alpha_1=length(log_pos_retail_1)*1/sum(log(log_pos_retail_1/thr_1))
 
@@ -174,26 +206,38 @@ h1_1=hist(log(log_pos_retail_1))
 h2_1=hist(log_pos_retail_1,breaks=exp(h1_1$breaks))
 
 constant_hist_1= length(log_pos_retail_1)/length(log_pos)
-model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(h2_1$mids/thr_1)^(-(alpha_1)-1)
+model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(sort(log_pos_retail_1)/thr_1)^(-(alpha_1)-1)
 
 
 #mesures de bondat de l'elecció del threshold
 cvplot(log_pos, thr=thr_1)
-ks.test(h2_1$density, model_pw_1/constant_hist_1)
-
 
 #info de Fisher
 error_1=alpha_1/sqrt(length(log_pos_retail_1))
 
 #plot de l'ajust
 plot(hpos$mids,hpos$density,log="xy")
-lines(h2_1$mids,model_pw_1 , col='red')
+lines(sort(log_pos_retail_1),model_pw_1 , col='red')
 
 
 #dades rellevants de l'ajust
 alpha_1
 error_1
 thr_1
+
+#simulació manual de valors amb distribució powerlaw amb paràmetres de l'ajust
+set.seed(777777)
+u=runif(5000,0,1)
+simulacio=(1 - u)^(-1 /alpha_1)*thr_1
+
+#check visual de la diferència entre funcions de distribució acumulada
+plot(ecdf(log_pos_retail_1))
+lines(ecdf(simulacio), col='red')
+
+#realiztem el test
+log_test=unique(log_pos_retail_1)
+ks.test(log_test, simulacio)
+
 
 #fem el mateix procediment per a la part negativa.
 
@@ -217,11 +261,10 @@ h1_1=hist(log(log_neg_retail_1))
 h2_1=hist(log_neg_retail_1,breaks=exp(h1_1$breaks))
 
 constant_hist_1= length(log_neg_retail_1)/length(log_neg)
-model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(h2_1$mids/thr_1)^(-(alpha_1)-1)
+model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(sort(log_neg_retail_1)/thr_1)^(-(alpha_1)-1)
 
 #mesures de bondad d'elecció del threshold
 cvplot(log_neg, thr=thr_1)
-ks.test(h2_1$density, model_pw_1/constant_hist_1)
 
 
 #info de Fisher
@@ -229,12 +272,27 @@ error_1=alpha_1/sqrt(length(log_neg_retail_1))
 
 #plot del model
 plot(hneg$mids,hneg$density,log="xy")
-lines(h2_1$mids,model_pw_1 , col='red')
+lines(sort(log_neg_retail_1),model_pw_1 , col='red')
 
 #dades rellevants de l'ajust
 alpha_1
 error_1
 thr_1
+
+#simulació manual de valors amb distribució powerlaw amb paràmetres de l'ajust
+set.seed(777777)
+u=runif(5000,0,1)
+simulacio=(1 - u)^(-1 /alpha_1)*thr_1
+
+#check visual de la diferència entre funcions de distribució acumulada
+plot(ecdf(log_pos_retail_1))
+lines(ecdf(simulacio), col='red')
+
+#per a no tenir imprecisions en el càlcul del p-valor eliminem els 
+#elements repetits
+log_test=unique(log_pos_retail_1)
+ks.test(log_test, simulacio)
+
 
 
 
@@ -277,13 +335,12 @@ h1_1=hist(log(log_pos_retail_1))
 h2_1=hist(log_pos_retail_1,breaks=exp(h1_1$breaks))
 
 constant_hist_1= length(log_pos_retail_1)/length(log_pos)
-model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(h2_1$mids/thr_1)^(-(alpha_1)-1)
+model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(sort(log_pos_retail_1)/thr_1)^(-(alpha_1)-1)
 
 
 #mesures de bondat de l'elecció del threshold
 
 cvplot(log_pos, thr=thr_1)
-ks.test(h2_1$density, model_pw_1/constant_hist_1)
 
 
 #info de Fisher
@@ -291,13 +348,29 @@ error_1=alpha_1/sqrt(length(log_pos_retail_1))
 
 #plot de l'ajust
 plot(hpos$mids,hpos$density,log="xy")
-lines(h2_1$mids,model_pw_1 , col='red')
+lines(sort(log_pos_retail_1),model_pw_1 , col='red')
 
 
 #dades rellevants de l'ajust
 alpha_1
 error_1
 thr_1
+
+#simulació manual de valors amb distribució powerlaw amb paràmetres de l'ajust
+set.seed(777777)
+u=runif(1000,0,1)
+simulacio=(1 - u)^(-1 /alpha_1)*thr_1
+
+#check visual de la diferència entre funcions de distribució acumulada
+plot(ecdf(log_pos_retail_1))
+lines(ecdf(simulacio), col='red')
+
+#per a no tenir imprecisions en el càlcul del p-valor eliminem els 
+#elements repetits
+log_test=unique(log_pos_retail_1)
+ks.test(log_test, simulacio)
+
+
 
 #fem el mateix procediment per a la part negativa.
 
@@ -322,11 +395,10 @@ h1_1=hist(log(log_neg_retail_1))
 h2_1=hist(log_neg_retail_1,breaks=exp(h1_1$breaks))
 
 constant_hist_1= length(log_neg_retail_1)/length(log_neg)
-model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(h2_1$mids/thr_1)^(-(alpha_1)-1)
+model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(sort(log_neg_retail_1)/thr_1)^(-(alpha_1)-1)
 
 #mesures de bondad d'elecció del threshold
 cvplot(log_neg, thr=thr_1)
-ks.test(h2_1$density, model_pw_1/constant_hist_1)
 
 
 #info de Fisher
@@ -334,12 +406,26 @@ error_1=alpha_1/sqrt(length(log_neg_retail_1))
 
 #plot del model
 plot(hneg$mids,hneg$density,log="xy")
-lines(h2_1$mids,model_pw_1 , col='red')
+lines(sort(log_neg_retail_1),model_pw_1 , col='red')
 
 #dades rellevants de l'ajust
 alpha_1
 error_1
 thr_1
+
+#simulació manual de valors amb distribució powerlaw amb paràmetres de l'ajust
+set.seed(7777777)
+u=runif(1500)
+simulacio=(1 - u)^(-1 /alpha_1)*thr_1
+
+#check visual de la diferència entre funcions de distribució acumulada
+plot(ecdf(log_neg_retail_1))
+lines(ecdf(simulacio), col='red')
+
+#per a no tenir imprecisions en el càlcul del p-valor eliminem els 
+#elements repetits
+log_test=unique(log_neg_retail_1)
+ks.test(log_test, simulacio)
 
 
 
@@ -369,7 +455,7 @@ hill(log_pos, end=1000)
 
 
 #escollim threshold
-thr_1=0.001
+thr_1=0.0009
 log_pos_retail_1=log_pos[log_pos>=thr_1]
 length(log_pos_retail_1)
 
@@ -380,25 +466,40 @@ h1_1=hist(log(log_pos_retail_1))
 h2_1=hist(log_pos_retail_1,breaks=exp(h1_1$breaks))
 
 constant_hist_1= length(log_pos_retail_1)/length(log_pos)
-model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(h2_1$mids/thr_1)^(-(alpha_1)-1)
+model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(sort(log_pos_retail_1)/thr_1)^(-(alpha_1)-1)
 
 
 #mesures de bondat de l'elecció del threshold
 cvplot(log_pos, thr=thr_1)
-ks.test(h2_1$density, model_pw_1/constant_hist_1)
 
 #info de Fisher
 error_1=alpha_1/sqrt(length(log_pos_retail_1))
 
 #plot de l'ajust
 plot(hpos$mids,hpos$density,log="xy")
-lines(h2_1$mids,model_pw_1 , col='red')
+lines(sort(log_pos_retail_1),model_pw_1 , col='red')
 
 
 #dades rellevants de l'ajust
 alpha_1
 error_1
 thr_1
+
+#simulació manual de valors amb distribució powerlaw amb paràmetres de l'ajust
+set.seed(777777)
+u=runif(1000)
+simulacio=(1 - u)^(-1 /alpha_1)*thr_1
+
+#check visual de la diferència entre funcions de distribució acumulada
+plot(ecdf(log_pos_retail_1))
+lines(ecdf(simulacio), col='red')
+
+#per a no tenir imprecisions en el càlcul del p-valor eliminem els 
+#elements repetits
+log_test=unique(log_pos_retail_1)
+ks.test(log_test, simulacio)
+
+
 
 ##############
 #fem el mateix procediment per a la part negativa.
@@ -413,7 +514,7 @@ hill(log_neg, end=1000)
 
 
 #escollim threshold
-thr_1=0.0009
+thr_1=0.001
 log_neg_retail_1=log_neg[log_neg>=thr_1]
 length(log_neg_retail_1)
 
@@ -424,23 +525,35 @@ h1_1=hist(log(log_neg_retail_1))
 h2_1=hist(log_neg_retail_1,breaks=exp(h1_1$breaks))
 
 constant_hist_1= length(log_neg_retail_1)/length(log_neg)
-model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(h2_1$mids/thr_1)^(-(alpha_1)-1)
+model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(sort(log_neg_retail_1)/thr_1)^(-(alpha_1)-1)
 
 #mesures de bondad d'elecció del threshold
 cvplot(log_neg, thr=thr_1)
-ks.test(h2_1$density, model_pw_1/constant_hist_1)
 
 #info de Fisher
 error_1=alpha_1/sqrt(length(log_neg_retail_1))
 
 #plot del model
 plot(hneg$mids,hneg$density,log="xy")
-lines(h2_1$mids,model_pw_1 , col='red')
+lines(sort(log_neg_retail_1),model_pw_1 , col='red')
 
 #dades rellevants de l'ajust
 alpha_1
 error_1
 thr_1
+
+#simulació manual de valors amb distribució powerlaw amb paràmetres de l'ajust
+set.seed(7777777)
+u=runif(1500)
+simulacio=(1 - u)^(-1 /alpha_1)*thr_1
+
+#check visual de la diferència entre funcions de distribució acumulada
+plot(ecdf(log_neg_retail_1))
+lines(ecdf(simulacio), col='red')
+
+#realitzem el test
+ks.test(log_neg_retail_1, simulacio)
+
 
 
 
@@ -483,12 +596,11 @@ h1_1=hist(log(log_pos_retail_1))
 h2_1=hist(log_pos_retail_1,breaks=exp(h1_1$breaks))
 
 constant_hist_1= length(log_pos_retail_1)/length(log_pos)
-model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(h2_1$mids/thr_1)^(-(alpha_1)-1)
+model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(sort(log_pos_retail_1)/thr_1)^(-(alpha_1)-1)
 
 
 #mesures de bondat de l'elecció del threshold
 cvplot(log_pos, thr=thr_1)
-ks.test(h2_1$density, model_pw_1/constant_hist_1)
 
 
 #info de Fisher
@@ -496,12 +608,28 @@ error_1=alpha_1/sqrt(length(log_pos_retail_1))
 
 #plot de l'ajust
 plot(hpos$mids,hpos$density,log="xy")
-lines(h2_1$mids,model_pw_1 , col='red')
+lines(sort(log_pos_retail_1),model_pw_1 , col='red')
 
 #dades rellevants de l'ajust
 alpha_1
 error_1
 thr_1
+
+set.seed(777777)
+u=runif(1500)
+simulacio=(1 - u)^(-1 /alpha_1)*thr_1
+#simulació manual de valors amb distribució powerlaw amb paràmetres de l'ajust
+
+plot(ecdf(log_pos_retail_1))
+lines(ecdf(simulacio), col='red')
+#check visual de la diferència entre funcions de distribució acumulada
+
+log_test=unique(log_pos_retail_1)
+ks.test(log_pos_retail_1, simulacio)
+#per a no tenir imprecisions en el càlcul del p-valor eliminem els 
+#elements repetits
+
+
 
 ##############
 #fem el mateix procediment per a la part negativa.
@@ -527,23 +655,37 @@ h1_1=hist(log(log_neg_retail_1))
 h2_1=hist(log_neg_retail_1,breaks=exp(h1_1$breaks))
 
 constant_hist_1= length(log_neg_retail_1)/length(log_neg)
-model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(h2_1$mids/thr_1)^(-(alpha_1)-1)
+model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(sort(log_neg_retail_1)/thr_1)^(-(alpha_1)-1)
 
 #mesures de bondad d'elecció del threshold
 cvplot(log_neg, thr=thr_1)
-ks.test(h2_1$density, model_pw_1/constant_hist_1)
 
 #info de Fisher
 error_1=alpha_1/sqrt(length(log_neg_retail_1))
 
 #plot del model
 plot(hneg$mids,hneg$density,log="xy")
-lines(h2_1$mids,model_pw_1 , col='red')
+lines(sort(log_neg_retail_1),model_pw_1 , col='red')
 
 #dades rellevants de l'ajust
 alpha_1
 error_1
 thr_1
+
+#simulació manual de valors amb distribució powerlaw amb paràmetres de l'ajust
+set.seed(7777777)
+u=runif(1500)
+simulacio=(1 - u)^(-1 /alpha_1)*thr_1
+
+#check visual de la diferència entre funcions de distribució acumulada
+plot(ecdf(log_neg_retail_1))
+lines(ecdf(simulacio), col='red')
+
+#per a no tenir imprecisions en el càlcul del p-valor eliminem els 
+#elements repetits
+ks.test(log_neg_retail_1, simulacio)
+
+
 
 
 ######### FEM EL MATEIX PER L'INTERVAL DE TEMPS ENTRE OBSERVACIONS 1hora
@@ -585,24 +727,38 @@ h1_1=hist(log(log_pos_retail_1))
 h2_1=hist(log_pos_retail_1,breaks=exp(h1_1$breaks))
 
 constant_hist_1= length(log_pos_retail_1)/length(log_pos)
-model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(h2_1$mids/thr_1)^(-(alpha_1)-1)
+model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(sort(log_pos_retail_1)/thr_1)^(-(alpha_1)-1)
 
 
 #mesures de bondat de l'elecció del threshold
 cvplot(log_pos, thr=thr_1)
-ks.test(h2_1$density, model_pw_1/constant_hist_1)
 
 #info de Fisher
 error_1=alpha_1/sqrt(length(log_pos_retail_1))
 
 #plot de l'ajust
 plot(hpos$mids,hpos$density,log="xy")
-lines(h2_1$mids,model_pw_1 , col='red')
+lines(sort(log_pos_retail_1),model_pw_1 , col='red')
 
 #dades rellevants de l'ajust
 alpha_1
 error_1
 thr_1
+
+#simulació manual de valors amb distribució powerlaw amb paràmetres de l'ajust
+set.seed(777777)
+u=runif(1500)
+simulacio=(1 - u)^(-1 /alpha_1)*thr_1
+
+#check visual de la diferència entre funcions de distribució acumulada
+plot(ecdf(log_pos_retail_1))
+lines(ecdf(simulacio), col='red')
+
+#per a no tenir imprecisions en el càlcul del p-valor eliminem els 
+#elements repetits
+ks.test(log_pos_retail_1, simulacio)
+
+
 
 ##############
 #fem el mateix procediment per a la part negativa.
@@ -628,23 +784,37 @@ h1_1=hist(log(log_neg_retail_1))
 h2_1=hist(log_neg_retail_1,breaks=exp(h1_1$breaks))
 
 constant_hist_1= length(log_neg_retail_1)/length(log_neg)
-model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(h2_1$mids/thr_1)^(-(alpha_1)-1)
+model_pw_1 = constant_hist_1*(alpha_1)/thr_1*(sort(log_neg_retail_1)/thr_1)^(-(alpha_1)-1)
 
 #mesures de bondad d'elecció del threshold
 cvplot(log_neg, thr=thr_1)
-ks.test(h2_1$density, model_pw_1/constant_hist_1)
 
 #info de Fisher
 error_1=alpha_1/sqrt(length(log_neg_retail_1))
 
 #plot del model
 plot(hneg$mids,hneg$density,log="xy")
-lines(h2_1$mids,model_pw_1 , col='red')
+lines(sort(log_neg_retail_1),model_pw_1 , col='red')
 
 #dades rellevants de l'ajust
 alpha_1
 error_1
 thr_1
+
+
+set.seed(777777)
+u=runif(1500)
+simulacio=(1 - u)^(-1 /alpha_1)*thr_1
+#simulació manual de valors amb distribució powerlaw amb paràmetres de l'ajust
+
+plot(ecdf(log_neg_retail_1))
+lines(ecdf(simulacio), col='red')
+#check visual de la diferència entre funcions de distribució acumulada
+
+ks.test(log_neg_retail_1, simulacio)
+#per a no tenir imprecisions en el càlcul del p-valor eliminem els 
+#elements repetits
+
 
 
 #######################################
@@ -666,13 +836,13 @@ model_logn = 1/(sqrt(2*pi)*lognorm$estimate[2]*b$mids)*exp(-(log(b$mids)-lognorm
 LogRetorns_EURJPY=b$mids
 Densitat=b$density
 plot(LogRetorns_EURJPY,Densitat,log="xy")
-lines(h2_2$mids,model_pw_2, col = 'green')
+lines(sort(log_pos_retail_1),model_pw_1, col = 'green')
 lines(b$mids , model_logn, col='blue')
 lines(b$mids , model_exp, col='red')
 legend("bottomleft", legend = c("Llei de Potencies" , 'Exponencial', 'Log-normal'), 
        col = c('green' ,'red', "blue"), lty = c(1,1,1), lwd = 2)
 
-
+summary(EURJPY)
 
 ################################
 ###   PDF mostral vs Gaussiana
@@ -707,8 +877,6 @@ eix_x=seq(-0.175,0.175,0.001)
 hist(log_dif_cierre, plot=T,breaks= eix_x,freq = FALSE, probability = TRUE)
 density_function=curve(dnorm(x,mu,sigma)
                        ,-0.175,0.175,length(log_dif_cierre), add=TRUE, col='red')
-
-
 
 
 
