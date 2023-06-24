@@ -822,27 +822,30 @@ ks.test(log_neg_retail_1, simulacio)
 #######################################
 
 
-library(MASS)
-lognorm=fitdistr(log_pos , 'lognormal' )
-exp=fitdistr(log_pos , 'exponential' )
-lognorm
+norm=fitdistr(log_dif_open , 'normal' )
+exp=fitdistr(log_neg , 'exponential' )
 
-a=hist(log(log_pos),breaks=50)
-b=hist(log_pos,breaks=exp(a$breaks))
-plot(b$mids,b$density,log="xy")
+a=hist(log(log_neg),breaks=50)
+b=hist(log_neg,breaks=exp(a$breaks))
+
+c=hist(log(log_pos),breaks=50)
+d=hist(log_pos,breaks = exp(c$breaks))
+
+both_m=c(-d$mids,b$mids)
+constant=length(log_dif_open)/length(log_neg)
 model_exp = exp$estimate*exp(-exp$estimate*b$mids)
-model_logn = 1/(sqrt(2*pi)*lognorm$estimate[2]*b$mids)*exp(-(log(b$mids)-lognorm$estimate[1])^2/(2*lognorm$estimate[2]^2)) 
+model_norm= constant*(1 / ( norm$estimate[2]*sqrt(2*pi)))*exp(-(both_m-norm$estimate[1])^2/(2*norm$estimate[2]^2))
 
 LogRetorns_EURJPY=b$mids
 Densitat=b$density
+
 plot(LogRetorns_EURJPY,Densitat,log="xy")
-lines(sort(log_pos_retail_1),model_pw_1, col = 'green')
-lines(b$mids , model_logn, col='blue')
+lines(sort(log_neg_retail_1),model_pw_1, col = 'green')
+lines(both_m , model_norm, col='blue')
 lines(b$mids , model_exp, col='red')
-legend("bottomleft", legend = c("Llei de Potencies" , 'Exponencial', 'Log-normal'), 
+legend("bottomleft", legend = c("Llei de Potencies" , 'Exponencial', 'Normal'), 
        col = c('green' ,'red', "blue"), lty = c(1,1,1), lwd = 2)
 
-summary(EURJPY)
 
 ################################
 ###   PDF mostral vs Gaussiana
@@ -873,10 +876,8 @@ plot(temps,log_dif_cierre)
 sigma=sd(log_dif_cierre)
 sigma
 mu=mean(log_dif_cierre)
-eix_x=seq(-0.175,0.175,0.001)
+eix_x=seq(-0.1,0.1,0.01)
 hist(log_dif_cierre, plot=T,breaks= eix_x,freq = FALSE, probability = TRUE)
 density_function=curve(dnorm(x,mu,sigma)
-                       ,-0.175,0.175,length(log_dif_cierre), add=TRUE, col='red')
-
-
+                       ,-0.1,0.1,length(log_dif_cierre), add=TRUE, col='red')
 
